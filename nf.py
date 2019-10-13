@@ -35,7 +35,9 @@ def listFiles(folder):
     path=os.path.join(notepath,folder)
     if os.path.exists(path):
         print ("Im Ordner " + folder + " gibt es folgende Notizen:\n")
-        for f in os.listdir(path):
+        dirlist= os.listdir(path)
+        dirlist.sort()
+        for f in dirlist:
             if not f.startswith("."):
                 print (f)
         print("\n\n")
