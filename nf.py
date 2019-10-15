@@ -4,7 +4,7 @@ import argparse,os
 parser = argparse.ArgumentParser()
 parser.add_argument('-c','--create', nargs = '*', help='Notiz im Ordner anlegen')
 parser.add_argument('-l','--list', help='Notizen in Ordner anzeigen')
-parser.add_argument('-fi','--folderIndex', help='Notizen in Ordner anzeigen')
+parser.add_argument('-fi','--folderIndex', help='Index Files für Ordner erzeugen -fi all für alle Ordner')
 parser.add_argument('-f','--folder', action='store_true', help='Ordner anzeigen')
 parser.add_argument('-ps','--push', action='store_true', help='Push Github')
 parser.add_argument('-pl','--pull', action='store_true', help='Pull Github')
@@ -33,6 +33,20 @@ def addFileToIndex(note,folder):
 
 
 def createNote(note, folder):
+    if note.isdigit():
+        indexFile=os.path.join(notepath,folder+".nf")
+        lines=[]
+        with open(indexFile,"r") as f:
+            lines=f.readlines()
+        for l in lines:
+            fields=l.split(",")
+            if fields[0]==note:
+                createNewNote(fields[1].split(".")[0],folder)
+        print("Notiz existiert nicht")
+    else:
+        createNewNote(note, folder)
+
+def createNewNote(note, folder):
     path=os.path.join(notepath,folder)
     note=note+".md"
     file=os.path.join(path,note)
@@ -64,6 +78,17 @@ def listFiles(folder):
 
 
 def indexFiles(folder):
+    if folder=="all":
+        dirlist= os.listdir(notepath)
+        dirlist.sort()
+        for d in dirlist:
+            if not os.path.isfile(d) and not d.startswith(".") and not d.endswith(".nf"):
+                indexFilesSingle(d)
+    else:
+        indexFilesSingle(folder)
+
+
+def indexFilesSingle(folder):
     print("Index für den Ordner "+folder+" neu erstellen.")
     path=os.path.join(notepath,folder)
     indexFile=os.path.join(notepath,folder+".nf")
@@ -81,13 +106,15 @@ def indexFiles(folder):
 
 
 
+
+
 def listFolders():
     os.system("clear")
     print ("Diese Ordner gibt es schon:\n")
     dirlist= os.listdir(notepath)
     dirlist.sort()
     for d in dirlist:
-        #print("*"+d)
+        #getrickst
         if not os.path.isfile(d) and not d.startswith(".") and not d.endswith(".nf"):
                 print (d)
     print("\n\n")
