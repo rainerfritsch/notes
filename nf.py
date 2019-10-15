@@ -86,9 +86,10 @@ def listFolders():
     print ("Diese Ordner gibt es schon:\n")
     dirlist= os.listdir(notepath)
     dirlist.sort()
-    for f in dirlist:
-        if not f.startswith("."):
-            print (f)
+    for d in dirlist:
+        #print("*"+d)
+        if not os.path.isfile(d) and not d.startswith(".") and not d.endswith(".nf"):
+                print (d)
     print("\n\n")
 
 def pushNotes():
@@ -123,7 +124,7 @@ if __name__ == "__main__":
         indexFiles(args.folderIndex)
 
     if args.folder:
-        listFolders(args.folder)
+        listFolders()
 
     if args.push:
         pushNotes()
