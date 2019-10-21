@@ -1,20 +1,59 @@
 from subprocess import call
 import argparse,os
+import configparser
+
+configFilePath = r'./nf.ini'
+configParser = configparser.RawConfigParser()
+config=configParser.read(configFilePath)
+switch = configParser.get('switch', 'repository')
+notepath = configParser.get('repository', switch)
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-c','--create', nargs = '*', help='Notiz im Ordner anlegen')
 parser.add_argument('-l','--list', help='Notizen in Ordner anzeigen')
 parser.add_argument('-fi','--folderIndex', help='Index Files für Ordner erzeugen -fi all für alle Ordner')
+parser.add_argument('-s','--search', help='Notiz finden')
 parser.add_argument('-f','--folder', action='store_true', help='Ordner anzeigen')
 parser.add_argument('-ps','--push', action='store_true', help='Push Github')
 parser.add_argument('-pl','--pull', action='store_true', help='Pull Github')
+parser.add_argument('-sw','--switch', help='Switch Repository')
 args = parser.parse_args()
 
 
-#config default values
-notepath="/Users/rainer/Documents/GitHub/myNotes"
 noteapp="atom"
 defaultFolder="default"
+
+def searchNote(note):
+    os.system("clear")
+
+    treffer=[]
+
+    filelist= os.listdir(notepath)
+    for file in filelist:
+        if file.endswith(".nf"):
+            #print(file)
+            path=os.path.join(notepath,file)
+            with open(path,"r") as f:
+                lines=f.readlines()
+                for l in lines:
+                    l=l.strip()
+                    fields=l.split(",")
+                    if note in fields[1]:
+                        treffer.append(file +"\n"+fields[0]+"->"+fields[1])
+                        #print (note + " gefunden in "+ file +"\n"+fields[0]+"->"+fields[1])
+    if len(treffer)>0:
+        print (note + " gefunden")
+        print ("=" *len(note + " gefunden"))
+        print ("\n")
+        for t in treffer:
+            print(t)
+        print("\n\n")
+    else:
+        print (note + " nicht gefunden")
+        print ("=" *len(note + " nicht gefunden"))
+        print("\n\n")
+
 
 
 def addFileToIndex(note,folder):
@@ -133,6 +172,11 @@ def pullNotes():
     os.chdir(notepath)
     call(["git", "pull", "origin", "master"])
 
+def switchRepository(repository):
+    configParser.set("switch","repository", repository)
+    with open(configFilePath, 'w') as configfile:    # save
+        configParser.write(configfile)
+
 
 if __name__ == "__main__":
     if args.create is not None:
@@ -143,12 +187,14 @@ if __name__ == "__main__":
 
         createNote(args.create[0],folder)
 
-
     if args.list is not None:
         listFiles(args.list)
 
     if args.folderIndex is not None:
         indexFiles(args.folderIndex)
+
+    if args.search is not None:
+        searchNote(args.search)
 
     if args.folder:
         listFolders()
@@ -158,3 +204,6 @@ if __name__ == "__main__":
 
     if args.pull:
         pullNotes()
+
+    if args.switch is not None:
+        switchRepository(args.switch)
